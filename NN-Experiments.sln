@@ -1,0 +1,55 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31729.503
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NN-Experiments.Common", "src\csharp\NN-Experiments.Common\NN-Experiments.Common.csproj", "{BBEE991E-CCAC-4C02-9277-B445C71049AB}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NN-Experiments.Perceptrons", "src\csharp\NN-Experiments.Perceptrons\NN-Experiments.Perceptrons.csproj", "{520E60B4-D87E-45BA-9C69-BEAFECE4FB8F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{A48AF022-C21B-4B23-B5CA-2D2231D41884}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libraries", "Libraries", "{048D0121-73A8-4979-885F-8CA0050CE654}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GUI", "GUI", "{1D1996A8-67AB-4669-81DF-1B484CD9B03F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NN-Experiments.Common.Tests", "tests\csharp\NN-Experiments.Common.Tests\NN-Experiments.Common.Tests.csproj", "{D89898B3-E022-4971-8974-2F7E8EC2EAB6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NN-Experiments.Perceptrons.Tests", "tests\csharp\NN-Experiments.Perceptrons.Tests\NN-Experiments.Perceptrons.Tests.csproj", "{CD687209-8202-4080-912A-B419825EBC53}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BBEE991E-CCAC-4C02-9277-B445C71049AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BBEE991E-CCAC-4C02-9277-B445C71049AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BBEE991E-CCAC-4C02-9277-B445C71049AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BBEE991E-CCAC-4C02-9277-B445C71049AB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{520E60B4-D87E-45BA-9C69-BEAFECE4FB8F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{520E60B4-D87E-45BA-9C69-BEAFECE4FB8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{520E60B4-D87E-45BA-9C69-BEAFECE4FB8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{520E60B4-D87E-45BA-9C69-BEAFECE4FB8F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D89898B3-E022-4971-8974-2F7E8EC2EAB6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D89898B3-E022-4971-8974-2F7E8EC2EAB6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D89898B3-E022-4971-8974-2F7E8EC2EAB6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D89898B3-E022-4971-8974-2F7E8EC2EAB6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CD687209-8202-4080-912A-B419825EBC53}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CD687209-8202-4080-912A-B419825EBC53}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CD687209-8202-4080-912A-B419825EBC53}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CD687209-8202-4080-912A-B419825EBC53}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{BBEE991E-CCAC-4C02-9277-B445C71049AB} = {048D0121-73A8-4979-885F-8CA0050CE654}
+		{520E60B4-D87E-45BA-9C69-BEAFECE4FB8F} = {048D0121-73A8-4979-885F-8CA0050CE654}
+		{D89898B3-E022-4971-8974-2F7E8EC2EAB6} = {A48AF022-C21B-4B23-B5CA-2D2231D41884}
+		{CD687209-8202-4080-912A-B419825EBC53} = {A48AF022-C21B-4B23-B5CA-2D2231D41884}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DBF4E420-0EC1-4D55-A0D4-D2649AC8DD62}
+	EndGlobalSection
+EndGlobal
