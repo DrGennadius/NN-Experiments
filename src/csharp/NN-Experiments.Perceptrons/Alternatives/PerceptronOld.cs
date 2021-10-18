@@ -7,7 +7,7 @@ using System.Linq;
 namespace NNExperiments.Perceptrons.Alternatives
 {
     /// <summary>
-    /// Perceptron with bias and momentum.
+    /// Old simple version of perceptron with bias and momentum.
     /// </summary>
     public class PerceptronOld : IPerceptronOld
     {
@@ -62,12 +62,23 @@ namespace NNExperiments.Perceptrons.Alternatives
         }
 
         /// <summary>
+        /// Create perceptron with bias and momentum by configuration and setting activation function.
+        /// </summary>
+        /// <param name="neuronsPerLayer">Configuration.</param>
+        /// <param name="activationFunctionType">Activation Function.</param>
+        /// <param name="momentumRate">Momentum rate.</param>
+        public PerceptronOld(int[] neuronsPerLayer, ActivationFunctionType activationFunctionType = ActivationFunctionType.Sigmoid)
+            : this(neuronsPerLayer, new Random(), activationFunctionType, momentumRate: 0.5)
+        {
+        }
+
+        /// <summary>
         /// Create perceptron with bias and momentum by configuration, setting activation function and momentum rate.
         /// </summary>
         /// <param name="neuronsPerLayer">Configuration.</param>
         /// <param name="activationFunctionType">Activation Function.</param>
         /// <param name="momentumRate">Momentum rate.</param>
-        public PerceptronOld(int[] neuronsPerLayer, ActivationFunctionType activationFunctionType = ActivationFunctionType.Sigmoid, double momentumRate = 0.5)
+        public PerceptronOld(int[] neuronsPerLayer, ActivationFunctionType activationFunctionType, double momentumRate)
             : this(neuronsPerLayer, new Random(), activationFunctionType, momentumRate)
         {
         }
