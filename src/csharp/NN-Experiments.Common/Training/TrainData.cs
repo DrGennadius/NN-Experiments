@@ -179,13 +179,13 @@ namespace NNExperiments.Common.Training
         }
 
         /// <summary>
-        /// Generate data "Multiplication".
+        /// Generate data "Sequential Multiplication".
         /// </summary>
+        /// <param name="min">Min input.</param>
+        /// <param name="max">Max input.</param>
         /// <returns></returns>
-        public static TrainData GenerateDataMultiplication()
+        public static TrainData GenerateDataSequentialMultiplication(int min = 0, int max = 9)
         {
-            int min = 0;
-            int max = 9;
             int p = 0;
             for (int i = min; i <= max; i++)
             {
@@ -204,6 +204,30 @@ namespace NNExperiments.Common.Training
                     outputs[count, 0] = i * k;
                     count++;
                 }
+            }
+            return new TrainData(inputs, outputs);
+        }
+
+        /// <summary>
+        /// Generate data "Random Multiplication".
+        /// </summary>
+        /// <param name="min">Min input.</param>
+        /// <param name="max">Max input.</param>
+        /// <param name="seed">Seed.</param>
+        /// <param name="samplesCount">Samples count.</param>
+        /// <returns></returns>
+        public static TrainData GenerateDataRandomMultiplication(int samplesCount, int seed, int min = 0, int max = 9)
+        {
+            Random random = new(seed);
+            double[,] inputs = new double[samplesCount, 2];
+            double[,] outputs = new double[samplesCount, 1];
+            for (int i = 0; i < samplesCount; i++)
+            {
+                double randomX1 = random.NextDouble() * (max - min) + min;
+                double randomX2 = random.NextDouble() * (max - min) + min;
+                inputs[i, 0] = randomX1;
+                inputs[i, 1] = randomX2;
+                outputs[i, 0] = randomX1 * randomX2;
             }
             return new TrainData(inputs, outputs);
         }
