@@ -15,6 +15,7 @@ namespace NNExperiments.Perceptrons.Tests
         private const double LearningRate = 0.1;
         private const double TargetError = 1e-6;
         private const int MaxEpoch = 1000000;
+        private const int AttemptLimit = 3;
         private const bool PrintError = false;
 
         private readonly int[] _netConfig = new int[] { 2, 5, 1 };
@@ -77,17 +78,17 @@ namespace NNExperiments.Perceptrons.Tests
             Assert.Pass();
         }
 
-        public IPerceptronBase[] CreateAllPerceptrons(int[] netConfig, ActivationFunctionType activationFunctionType)
+        public IBasicPerceptron[] CreateAllPerceptrons(int[] netConfig, ActivationFunctionType activationFunctionType)
         {
             PerceptronTopology topology = new(netConfig, new ActivationFunction(activationFunctionType));
             object[] masterArgs = new object[] { topology };
             object[] alternativeArgs = new object[] { netConfig, activationFunctionType };
-            var perceptronBaseType = typeof(IPerceptronBase);
+            var perceptronBaseType = typeof(IBasicPerceptron);
             var types = AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(s => s.GetTypes())
                 .Where(p => perceptronBaseType.IsAssignableFrom(p) && !p.IsInterface);
 
-            List<IPerceptronBase> perceptrons = new();
+            List<IBasicPerceptron> perceptrons = new();
 
             foreach (var type in types)
             {
@@ -97,15 +98,15 @@ namespace NNExperiments.Perceptrons.Tests
                     continue;
                 }
 
-                IPerceptronBase newPerceptron = null;
+                IBasicPerceptron newPerceptron = null;
 
                 try
                 {
-                    newPerceptron = (IPerceptronBase)Activator.CreateInstance(type, masterArgs);
+                    newPerceptron = (IBasicPerceptron)Activator.CreateInstance(type, masterArgs);
                 }
                 catch (MissingMethodException)
                 {
-                    newPerceptron = (IPerceptronBase)Activator.CreateInstance(type, alternativeArgs);
+                    newPerceptron = (IBasicPerceptron)Activator.CreateInstance(type, alternativeArgs);
                 }
 
                 if (newPerceptron != null)
@@ -117,7 +118,7 @@ namespace NNExperiments.Perceptrons.Tests
             return perceptrons.ToArray();
         }
 
-        private void TestWithDifferentData(IPerceptronBase[] perceptrons)
+        private void TestWithDifferentData(IBasicPerceptron[] perceptrons)
         {
             foreach (var perceptron in perceptrons)
             {
@@ -125,22 +126,41 @@ namespace NNExperiments.Perceptrons.Tests
             }
         }
 
-        private void TestWithDifferentData(IPerceptronBase perceptron)
+        private void TestWithDifferentData(IBasicPerceptron perceptron)
         {
             foreach (var trainDataItem in _trainLogicDataDictionary)
             {
-                var perceptronClone = perceptron.Clone() as IPerceptronBase;
-                TrainStats trainStats = Train(perceptronClone, trainDataItem.Value);
-                TestReadyLogicModel(perceptronClone, trainDataItem.Value, trainDataItem.Key);
+                int attempt = 1;
+                while (attempt < AttemptLimit)
+                {
+                    try
+                    {
+                        var perceptronClone = perceptron.Clone() as IBasicPerceptron;
+                        TrainStats trainStats = Train(perceptronClone, trainDataItem.Value);
+                        TestReadyLogicModel(perceptronClone, trainDataItem.Value, trainDataItem.Key);
+                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        if (attempt < AttemptLimit)
+                        {
+                            attempt++;
+                        }
+                        else
+                        {
+                            throw;
+                        }
+                    }
+                }
             }
         }
 
-        private TrainStats Train(IPerceptronBase perceptron, TrainData trainData)
+        private TrainStats Train(IBasicPerceptron perceptron, TrainData trainData)
         {
             return Train(perceptron, trainData, perceptron.Topology.GetOutputActivationFunction().Type);
         }
 
-        private TrainStats Train(IPerceptronBase perceptron, TrainData trainData, ActivationFunctionType activationFunctionType)
+        private TrainStats Train(IBasicPerceptron perceptron, TrainData trainData, ActivationFunctionType activationFunctionType)
         {
             if (activationFunctionType == ActivationFunctionType.Tanh)
             {
@@ -151,7 +171,7 @@ namespace NNExperiments.Perceptrons.Tests
             return perceptronTrainer.Train(perceptron, trainData, LearningRate, TargetError, MaxEpoch, PrintError);
         }
 
-        private void TestReadyLogicModel(IPerceptronBase perceptron, TrainData trainData, string trainDataName)
+        private void TestReadyLogicModel(IBasicPerceptron perceptron, TrainData trainData, string trainDataName)
         {
             for (int i = 0; i < 4; i++)
             {
@@ -161,7 +181,7 @@ namespace NNExperiments.Perceptrons.Tests
             }
         }
 
-        private void TestReadyLogicModel(IPerceptronBase perceptron, double[] sample, double expectedValue, string trainDataName)
+        private void TestReadyLogicModel(IBasicPerceptron perceptron, double[] sample, double expectedValue, string trainDataName)
         {
             var activationFunctionType = perceptron.Topology.GetOutputActivationFunction().Type;
             if (activationFunctionType == ActivationFunctionType.Tanh)
@@ -172,7 +192,7 @@ namespace NNExperiments.Perceptrons.Tests
             CheckReadyLogicModelOutput(perceptron, sample, expectedValue, predictedValue, activationFunctionType, trainDataName);
         }
 
-        private void CheckReadyLogicModelOutput(IPerceptronBase perceptron,
+        private void CheckReadyLogicModelOutput(IBasicPerceptron perceptron,
                                                 double[] sample,
                                                 double expectedValue,
                                                 double predictedValue,

@@ -50,7 +50,7 @@ namespace NNExperiments.Perceptrons.Alternatives
             set => throw new NotImplementedException();
         }
 
-        double IPerceptronBase.MomentumRate { get => MomentumRate; set => MomentumRate = value; }
+        double IBasicPerceptron.MomentumRate { get => MomentumRate; set => MomentumRate = value; }
 
         /// <summary>
         /// Create perceptron with bias and momentum by configuration.
@@ -166,7 +166,7 @@ namespace NNExperiments.Perceptrons.Alternatives
             return outputs;
         }
 
-        public void Backward(double[] input, double[] targetOutput, double learningRate)
+        public void Backward(double[] targetOutput, double learningRate)
         {
             double[][] deltas = new double[Layers.Length][];
             int lastLayerIndex = Layers.Length - 1;
@@ -336,12 +336,12 @@ namespace NNExperiments.Perceptrons.Alternatives
             throw new NotImplementedException();
         }
 
-        public void TransferFrom(IPerceptronBase otherPerceptron)
+        public void TransferFrom(IBasicPerceptron otherPerceptron)
         {
             throw new NotImplementedException();
         }
 
-        public void TransferTo(IPerceptronBase otherPerceptron)
+        public void TransferTo(IBasicPerceptron otherPerceptron)
         {
             throw new NotImplementedException();
         }

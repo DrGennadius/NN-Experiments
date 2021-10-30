@@ -1,11 +1,13 @@
-﻿using NNExperiments.Common.Training;
-using NNExperiments.Perceptrons.Alternatives;
+﻿using NNExperiments.Perceptrons.Alternatives;
 using NNExperiments.Perceptrons.Common;
 using System;
 
 namespace NNExperiments.Perceptrons
 {
-    public class PerceptronBase : IPerceptronBase
+    /// <summary>
+    /// Base perceptron.
+    /// </summary>
+    public class BasicPerceptron : IBasicPerceptron
     {
         private double[][][] _weights;
         private double[][][] _prevWeightChanges;
@@ -17,41 +19,92 @@ namespace NNExperiments.Perceptrons
         private double[] _input;
         private double _momentumRate;
 
-        public double[][][] Weights { get => _weights; set => _weights = value; }
-
-        public double[][] Biases { get => _biases; set => _biases = value; }
-
-        public double MomentumRate { get => _momentumRate; set => _momentumRate = value; }
-        public PerceptronTopology Topology { get; set; }
-
-        public PerceptronBase()
+        public BasicPerceptron()
         {
         }
 
-        public PerceptronBase(PerceptronTopology topology)
+        public BasicPerceptron(PerceptronTopology topology)
         {
             Topology = topology;
             Initialize();
         }
 
-        public PerceptronBase(PerceptronTopology topology, double momentumRate = 0.5)
+        public BasicPerceptron(PerceptronTopology topology, double momentumRate = 0.5)
         {
             Topology = topology;
             _momentumRate = momentumRate;
             Initialize();
         }
 
-        public PerceptronBase(IPerceptronBase perceptron)
+        public BasicPerceptron(IBasicPerceptron perceptron)
         {
             TransferFrom(perceptron);
         }
 
-        public PerceptronBase(IPerceptronOld perceptronOld)
+        public BasicPerceptron(IPerceptronOld perceptronOld)
         {
             TransferFrom(perceptronOld);
         }
 
-        public void Backward(double[] input, double[] targetOutput, double alpha)
+        public double[][][] Weights { get => _weights; set => _weights = value; }
+
+        public double[][] Biases { get => _biases; set => _biases = value; }
+
+        public double MomentumRate { get => _momentumRate; set => _momentumRate = value; }
+
+        public PerceptronTopology Topology { get; set; }
+
+        /// <summary>
+        /// Forward propagation.
+        /// </summary>
+        /// <param name="input">Input data.</param>
+        /// <returns></returns>
+        public double[] Forward(double[] input)
+        {
+            _input = input;
+            int sizeL = _weights.Length;
+            for (int i = 0; i < sizeL; i++)
+            {
+                var activationFunction = Topology.ActivationFunctions[i].Calculate;
+                var derivativeActivationFunction = Topology.ActivationFunctions[i].CalculateDerivative;
+                var layerOutputs = _outputs[i];
+                var layerDerivatives = _derivatives[i];
+                var layerBiases = _biases[i];
+                var layerWeights = _weights[i];
+                int sizeN = layerWeights.Length;
+                for (int n = 0; n < sizeN; n++)
+                {
+                    double sum = layerBiases[n];
+                    var neuronWeights = layerWeights[n];
+                    int sizeW = neuronWeights.Length;
+                    for (int w = 0; w < sizeW; w++)
+                    {
+                        sum += neuronWeights[w] * input[w];
+                    }
+                    layerOutputs[n] = activationFunction(sum);
+                    layerDerivatives[n] = derivativeActivationFunction(layerOutputs[n]);
+                }
+                input = layerOutputs;
+            }
+            return input;
+        }
+
+        /// <summary>
+        /// Backward propagation.
+        /// </summary>
+        /// <param name="targetOutput"></param>
+        /// <param name="alpha"></param>
+        public void Backward(double[] targetOutput, double alpha)
+        {
+            UpdateDeltas(targetOutput);
+            UpdateWeightsAndBiases(alpha);
+        }
+
+        /// <summary>
+        /// Update deltas.
+        /// </summary>
+        /// <param name="targetOutput"></param>
+        private void UpdateDeltas(double[] targetOutput)
         {
             int lastLayerIndex = Topology.GetLayerCount() - 1;
 
@@ -88,8 +141,14 @@ namespace NNExperiments.Perceptrons
                     }
                 }
             }
+        }
 
-            // Update weights and biases.
+        /// <summary>
+        /// Update weights and biases.
+        /// </summary>
+        /// <param name="alpha"></param>
+        private void UpdateWeightsAndBiases(double alpha)
+        {
             var layerWeights = _weights[0];
             var layerBiases = _biases[0];
             var layerDeltas = _deltas[0];
@@ -143,53 +202,10 @@ namespace NNExperiments.Perceptrons
 
         public object Clone()
         {
-            PerceptronBase perceptronBase = new();
-            perceptronBase.TransferFrom(this);
-            return perceptronBase;
+            return new BasicPerceptron(this);
         }
 
-        public double[] Forward(double[] input)
-        {
-            _input = input;
-            int sizeL = _weights.Length;
-            for (int i = 0; i < sizeL; i++)
-            {
-                var activationFunction = Topology.ActivationFunctions[i].Calculate;
-                var derivativeActivationFunction = Topology.ActivationFunctions[i].CalculateDerivative;
-                var layerOutputs = _outputs[i];
-                var layerDerivatives = _derivatives[i];
-                var layerBiases = _biases[i];
-                var layerWeights = _weights[i];
-                int sizeN = layerWeights.Length;
-                for (int n = 0; n < sizeN; n++)
-                {
-                    double sum = layerBiases[n];
-                    var neuronWeights = layerWeights[n];
-                    int sizeW = neuronWeights.Length;
-                    for (int w = 0; w < sizeW; w++)
-                    {
-                        sum += neuronWeights[w] * input[w];
-                    }
-                    layerOutputs[n] = activationFunction(sum);
-                    layerDerivatives[n] = derivativeActivationFunction(layerOutputs[n]);
-                }
-                input = layerOutputs;
-            }
-            return input;
-        }
-
-        public TrainStats Train(double[,] inputs, double[,] outputs, double alpha, double targetError, int maxEpoch, bool printError = false)
-        {
-            return Train(new TrainData(inputs, outputs), alpha, targetError, maxEpoch, printError);
-        }
-
-        public TrainStats Train(TrainData trainData, double alpha, double targetError, int maxEpoch, bool printError = false)
-        {
-
-            throw new NotImplementedException();
-        }
-
-        public void TransferFrom(IPerceptronBase otherPerceptron)
+        public void TransferFrom(IBasicPerceptron otherPerceptron)
         {
             _weights = new double[otherPerceptron.Weights.Length][][];
             for (int i = 0; i < otherPerceptron.Weights.Length; i++)
@@ -253,7 +269,7 @@ namespace NNExperiments.Perceptrons
             InitializeInternalValues(sizes);
         }
 
-        public void TransferTo(IPerceptronBase otherPerceptron)
+        public void TransferTo(IBasicPerceptron otherPerceptron)
         {
             otherPerceptron.TransferFrom(this);
         }

@@ -3,7 +3,7 @@ using NNExperiments.Perceptrons.Common;
 
 namespace NNExperiments.Perceptrons.Alternatives
 {
-    public interface IPerceptronOld : IPerceptronBase
+    public interface IPerceptronOld : IBasicPerceptron
     {
         void TransferWeightsFrom(IPerceptronOld otherPerceptron);
 

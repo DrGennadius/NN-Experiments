@@ -1,5 +1,4 @@
 ﻿using NNExperiments.Common.ActivationFunctions;
-using NNExperiments.Common.Training;
 using NNExperiments.Perceptrons.Common;
 using NNExperiments.Perceptrons.Layers;
 using System;
@@ -10,36 +9,6 @@ namespace NNExperiments.Perceptrons
 {
     public class Perceptron : IPerceptron
     {
-        public IList<ILayerBase> Layers { get; set; }
-
-        public double[][][] Weights
-        {
-            get
-            {
-                return Layers.Select(x => x.Weights).ToArray();
-            }
-            set
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public double[][] Biases
-        {
-            get
-            {
-                return Layers.Select(x => x.Neurons.Select(n => n.Bias).ToArray()).ToArray();
-            }
-            set
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public PerceptronTopology Topology { get; set; }
-
-        public double MomentumRate { get; set; }
-
         public Perceptron()
         {
             Layers = new List<ILayerBase>();
@@ -56,8 +25,7 @@ namespace NNExperiments.Perceptrons
         /// Create perceptron with bias and momentum by other Perceptron.
         /// </summary>
         /// <param name="perceptron"></param>
-        /// <param name="momentumRate"></param>
-        public Perceptron(IPerceptronBase perceptron)
+        public Perceptron(IBasicPerceptron perceptron)
         {
             Layers = new List<ILayerBase>(perceptron.Topology.GetLayerCount());
             TransferFrom(perceptron);
@@ -68,10 +36,73 @@ namespace NNExperiments.Perceptrons
         /// </summary>
         /// <param name="perceptron"></param>
         /// <param name="momentumRate"></param>
-        public Perceptron(IPerceptronBase perceptron, double momentumRate = 0.5)
+        public Perceptron(IBasicPerceptron perceptron, double momentumRate = 0.5)
         {
             TransferFrom(perceptron);
             MomentumRate = momentumRate;
+        }
+
+        public IList<ILayerBase> Layers { get; set; }
+
+        public double[][][] Weights
+        {
+            get => Layers.Select(x => x.Weights).ToArray();
+        }
+
+        public double[][] Biases
+        {
+            get => Layers.Select(x => x.Neurons.Select(n => n.Bias).ToArray()).ToArray();
+        }
+
+        public PerceptronTopology Topology { get; set; }
+
+        public double MomentumRate { get; set; }
+
+        public double[] Forward(double[] input)
+        {
+            int layerCount = Layers.Count;
+            double[] output = Layers[0].Forward(input);
+            for (int i = 1; i < layerCount; i++)
+            {
+                output = Layers[i].Forward(output);
+            }
+            return output;
+        }
+
+        public void Backward(double[] targetOutput, double alpha)
+        {
+            int lastLayerIndex = Layers.Count - 1;
+
+            // From end.
+            for (int i = 0; i < targetOutput.Length; i++)
+            {
+                // Difference between goal output and real output elements.
+                double e = Layers[lastLayerIndex].Neurons[i].Output - targetOutput[i];
+                Layers[lastLayerIndex].Neurons[i].Delta = e * Layers[lastLayerIndex].Neurons[i].DerivatedOutput;
+            }
+
+            // Calculate each previous delta based on the current one
+            // by multiplying by the transposed matrix.
+            for (int k = lastLayerIndex; k > 0; k--)
+            {
+                var layer = Layers[k].Neurons;
+                var previousLayer = Layers[k - 1].Neurons;
+                for (int i = 0; i < previousLayer.Length; i++)
+                {
+                    previousLayer[i].Delta = 0.0;
+                }
+                for (int i = 0; i < layer.Length; i++)
+                {
+                    var neuron = layer[i];
+                    for (int j = 0; j < neuron.Weights.Length; j++)
+                    {
+                        previousLayer[j].Delta += neuron.Weights[j] * neuron.Delta * previousLayer[j].DerivatedOutput;
+                    }
+                }
+            }
+
+            // Correcting weights and bias.
+            UpdateWeights(alpha);
         }
 
         public IPerceptron Add(ILayerBase layer)
@@ -137,47 +168,11 @@ namespace NNExperiments.Perceptrons
         public IPerceptron AddLayer(int numberOfNeurons, int numberOfInputs, ActivationFunction activationFunction, Random random)
         {
             return Add(new Layer(numberOfNeurons, numberOfInputs, activationFunction, random));
-        }
+        }        
 
-        public void Backward(double[] input, double[] targetOutput, double alpha)
+        public IBasicPerceptron GetBasicPerceptron()
         {
-            int lastLayerIndex = Layers.Count - 1;
-
-            // From end.
-            for (int i = 0; i < targetOutput.Length; i++)
-            {
-                // Difference between goal output and real output elements.
-                double e = Layers[lastLayerIndex].Neurons[i].Output - targetOutput[i];
-                Layers[lastLayerIndex].Neurons[i].Delta = e * Layers[lastLayerIndex].Neurons[i].DerivatedOutput;
-            }
-
-            // Calculate each previous delta based on the current one
-            // by multiplying by the transposed matrix.
-            for (int k = lastLayerIndex; k > 0; k--)
-            {
-                var layer = Layers[k].Neurons;
-                var previousLayer = Layers[k - 1].Neurons;
-                for (int i = 0; i < previousLayer.Length; i++)
-                {
-                    previousLayer[i].Delta = 0.0;
-                }
-                for (int i = 0; i < layer.Length; i++)
-                {
-                    var neuron = layer[i];
-                    for (int j = 0; j < neuron.Weights.Length; j++)
-                    {
-                        previousLayer[j].Delta += neuron.Weights[j] * neuron.Delta * previousLayer[j].DerivatedOutput;
-                    }
-                }
-            }
-
-            // Correcting weights and bias.
-            UpdateWeights(alpha);
-        }
-
-        public IPerceptron Build()
-        {
-            throw new NotImplementedException();
+            return new BasicPerceptron(this);
         }
 
         public object Clone()
@@ -185,29 +180,7 @@ namespace NNExperiments.Perceptrons
             return new Perceptron(this);
         }
 
-        public double[] Forward(double[] input)
-        {
-            int layerCount = Layers.Count;
-            double[] output = Layers[0].Forward(input);
-            for (int i = 1; i < layerCount; i++)
-            {
-                output = Layers[i].Forward(output);
-            }
-            return output;
-        }
-
-        public TrainStats Train(double[,] inputs, double[,] outputs, double alpha, double targetError, int maxEpoch, bool printError = false)
-        {
-            return Train(new TrainData(inputs, outputs), alpha, targetError, maxEpoch, printError);
-        }
-
-        public TrainStats Train(TrainData trainData, double alpha, double targetError, int maxEpoch, bool printError = false)
-        {
-            PerceptronTrainer trainer = new();
-            return trainer.Train(this, trainData, alpha, targetError, maxEpoch, printError);
-        }
-
-        public void TransferFrom(IPerceptronBase otherPerceptron)
+        public void TransferFrom(IBasicPerceptron otherPerceptron)
         {
             Topology = otherPerceptron.Topology;
             MomentumRate = otherPerceptron.MomentumRate;
@@ -229,7 +202,7 @@ namespace NNExperiments.Perceptrons
             }
         }
 
-        public void TransferTo(IPerceptronBase otherPerceptron)
+        public void TransferTo(IBasicPerceptron otherPerceptron)
         {
             otherPerceptron.TransferFrom(this);
         }

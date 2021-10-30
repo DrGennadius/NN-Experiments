@@ -3,6 +3,9 @@ using NNExperiments.Perceptrons.Neurons;
 
 namespace NNExperiments.Perceptrons.Layers
 {
+    /// <summary>
+    /// Interface of layer base.
+    /// </summary>
     public interface ILayerBase
     {
         Neuron[] Neurons { get; set; }

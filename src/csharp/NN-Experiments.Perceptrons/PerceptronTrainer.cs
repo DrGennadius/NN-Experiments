@@ -20,7 +20,7 @@ namespace NNExperiments.Perceptrons
         /// <param name="maxEpoch">Max number epochs.</param>
         /// <param name="printError">Print error each epoch.</param>
         /// <returns></returns>
-        public TrainStats Train(IPerceptronBase perceptron, TrainData trainData, double alpha, double targetError, int maxEpoch, bool printError, int printErrorSteps = -1)
+        public TrainStats Train(IBasicPerceptron perceptron, TrainData trainData, double alpha, double targetError, int maxEpoch, bool printError, int printErrorSteps = -1)
         {
             double error = double.MaxValue;
             int rowCountX = trainData.Inputs.GetLength(0);
@@ -50,7 +50,7 @@ namespace NNExperiments.Perceptrons
                     {
                         outputs[s, c] = currentOutput[c];
                     }
-                    perceptron.Backward(input, targetOutputs, alpha);
+                    perceptron.Backward(targetOutputs, alpha);
                 }
                 error = CommonFunctions.MeanBatchMSE(outputs, trainData.Outputs);
                 if (printError && epoch % printErrorStep == 0)
@@ -78,7 +78,7 @@ namespace NNExperiments.Perceptrons
         /// <param name="maxEpoch">Max number epochs.</param>
         /// <param name="printError">Print error each epoch.</param>
         /// <returns></returns>
-        public TrainStats[] PairTrain(IPerceptronBase perceptron1, IPerceptronBase perceptron2, TrainData trainData, double alpha, double targetError, int maxEpoch, bool printError, int printErrorSteps = -1)
+        public TrainStats[] PairTrain(IBasicPerceptron perceptron1, IBasicPerceptron perceptron2, TrainData trainData, double alpha, double targetError, int maxEpoch, bool printError, int printErrorSteps = -1)
         {
             double error1 = double.MaxValue;
             double error2 = double.MaxValue;
@@ -112,8 +112,8 @@ namespace NNExperiments.Perceptrons
                         outputs1[s, c] = currentOutput1[c];
                         outputs2[s, c] = currentOutput1[c];
                     }
-                    perceptron1.Backward(input, targetOutputs, alpha);
-                    perceptron2.Backward(input, targetOutputs, alpha);
+                    perceptron1.Backward(targetOutputs, alpha);
+                    perceptron2.Backward(targetOutputs, alpha);
                 }
                 error1 = CommonFunctions.MeanBatchMSE(outputs1, trainData.Outputs);
                 error2 = CommonFunctions.MeanBatchMSE(outputs2, trainData.Outputs);

@@ -5,6 +5,9 @@ using System.Linq;
 
 namespace NNExperiments.Perceptrons.Layers
 {
+    /// <summary>
+    /// Perceptron layer.
+    /// </summary>
     public class Layer : ILayerBase
     {
         public ActivationFunction ActivationFunction { get; set; }

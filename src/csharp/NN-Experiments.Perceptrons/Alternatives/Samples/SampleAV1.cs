@@ -255,7 +255,7 @@ namespace NNExperiments.Perceptrons.Alternatives.Samples
                         outputs1[s, c] = currentOutput1[c];
                         outputs2[s, c] = currentOutput1[c];
                     }
-                    perceptron1.Backward(input, targetOutputs, learningRate);
+                    perceptron1.Backward(targetOutputs, learningRate);
                     double tempError = 0;
                     perceptron2.Backward(trainDataAV1[1][s], ref tempError);
                     perceptron2.UpdateWeights(learningRate);

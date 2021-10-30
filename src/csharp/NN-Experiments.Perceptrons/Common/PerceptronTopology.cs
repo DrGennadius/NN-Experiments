@@ -2,6 +2,9 @@
 
 namespace NNExperiments.Perceptrons.Common
 {
+    /// <summary>
+    /// Perceptron topology.
+    /// </summary>
     public struct PerceptronTopology
     {
         public PerceptronTopology(int inputSize, int[] neuronsPerHiddenLayer, int outputSize, ActivationFunction activationFunction)

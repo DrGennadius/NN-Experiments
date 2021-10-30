@@ -78,7 +78,7 @@ namespace NNExperiments.Perceptrons.Alternatives
             return outputs;
         }
 
-        public void Backward(double[] input, double[] targetOutput, double learningRate)
+        public void Backward(double[] targetOutput, double learningRate)
         {
             double[][] deltas = new double[Layers.Length][];
             int lastLayerIndex = Layers.Length - 1;
@@ -244,12 +244,12 @@ namespace NNExperiments.Perceptrons.Alternatives
             throw new NotImplementedException();
         }
 
-        public void TransferFrom(IPerceptronBase otherPerceptron)
+        public void TransferFrom(IBasicPerceptron otherPerceptron)
         {
             throw new NotImplementedException();
         }
 
-        public void TransferTo(IPerceptronBase otherPerceptron)
+        public void TransferTo(IBasicPerceptron otherPerceptron)
         {
             throw new NotImplementedException();
         }
