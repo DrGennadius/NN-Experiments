@@ -2,11 +2,12 @@
 using NNExperiments.Common.Training;
 using NNExperiments.Perceptrons.Common;
 using System;
+using System.Diagnostics;
 
 namespace NNExperiments.Perceptrons
 {
     /// <summary>
-    /// Trainer for Perceptrons
+    /// Perceptron Trainer. Performs training of perceptron models.
     /// </summary>
     public class PerceptronTrainer
     {
@@ -18,18 +19,27 @@ namespace NNExperiments.Perceptrons
         /// <param name="alpha">Learning rate.</param>
         /// <param name="targetError">Target error value.</param>
         /// <param name="maxEpoch">Max number epochs.</param>
-        /// <param name="printError">Print error each epoch.</param>
+        /// <param name="isStoreErrorHistory">Is store error history?</param>
+        /// <param name="storeErrorSteps">Steps for store an errors.</param>
         /// <returns></returns>
-        public TrainStats Train(IBasicPerceptron perceptron, TrainData trainData, double alpha, double targetError, int maxEpoch, bool printError, int printErrorSteps = -1)
+        public TrainStats Train(IBasicPerceptron perceptron,
+                                TrainData trainData,
+                                double alpha,
+                                double targetError,
+                                int maxEpoch,
+                                bool isStoreErrorHistory,
+                                int storeErrorSteps = -1)
         {
+            TrainStats trainStats = new();
             double error = double.MaxValue;
             int rowCountX = trainData.Inputs.GetLength(0);
             int columnCountX = trainData.Inputs.GetLength(1);
             int rowCountY = trainData.Outputs.GetLength(0);
             int columnCountY = trainData.Outputs.GetLength(1);
-            int printErrorStep = printErrorSteps > 0 ? maxEpoch / printErrorSteps : maxEpoch >= 100 ? maxEpoch / 100 : maxEpoch > 10 ? maxEpoch / 10 : 1;
+            int errorHistoryStep = CalcErrorHistoryStep(maxEpoch, storeErrorSteps);
             double[,] outputs = new double[rowCountY, columnCountY];
             int epoch = 0;
+            var stopwatch = Stopwatch.StartNew();
             do
             {
                 epoch++;
@@ -53,22 +63,25 @@ namespace NNExperiments.Perceptrons
                     perceptron.Backward(targetOutputs, alpha);
                 }
                 error = CommonFunctions.MeanBatchMSE(outputs, trainData.Outputs);
-                if (printError && epoch % printErrorStep == 0)
+                if (isStoreErrorHistory && epoch % errorHistoryStep == 0)
                 {
-                    Console.WriteLine("({0}) Mean Batch MSE: {1}", epoch, error);
+                    trainStats.ErrorHistory.Add(new EpochStats(epoch, error));
                 }
             }
-            while (error > targetError && epoch < maxEpoch);
-            TrainStats trainStats = new TrainStats
-            {
-                LastError = error,
-                NumberOfEpoch = epoch
-            };
+            while (error > targetError
+                   && epoch < maxEpoch);
+
+            stopwatch.Stop();
+
+            trainStats.Time = new TimeSpan(stopwatch.ElapsedTicks);
+            trainStats.LastError = error;
+            trainStats.NumberOfEpoch = epoch;
+
             return trainStats;
         }
 
         /// <summary>
-        /// Pair training of two Perceptrons.
+        /// Pair training of the two perceptrons.
         /// </summary>
         /// <param name="perceptron1">Perceptron 1</param>
         /// <param name="perceptron2">Perceptron 1</param>
@@ -76,20 +89,29 @@ namespace NNExperiments.Perceptrons
         /// <param name="alpha">Learning rate.</param>
         /// <param name="targetError">Target error value.</param>
         /// <param name="maxEpoch">Max number epochs.</param>
-        /// <param name="printError">Print error each epoch.</param>
+        /// <param name="isStoreErrorHistory">Is store error history?</param>
+        /// <param name="storeErrorSteps">Steps for store an errors.</param>
         /// <returns></returns>
-        public TrainStats[] PairTrain(IBasicPerceptron perceptron1, IBasicPerceptron perceptron2, TrainData trainData, double alpha, double targetError, int maxEpoch, bool printError, int printErrorSteps = -1)
+        public TrainStats[] PairTrain(IBasicPerceptron perceptron1,
+                                      IBasicPerceptron perceptron2,
+                                      TrainData trainData,
+                                      double alpha,
+                                      double targetError,
+                                      int maxEpoch,
+                                      bool isStoreErrorHistory,
+                                      int storeErrorSteps = -1)
         {
-            double error1 = double.MaxValue;
-            double error2 = double.MaxValue;
+            TrainStats[] trainStats = new TrainStats[2];
             int rowCountX = trainData.Inputs.GetLength(0);
             int columnCountX = trainData.Inputs.GetLength(1);
             int rowCountY = trainData.Outputs.GetLength(0);
             int columnCountY = trainData.Outputs.GetLength(1);
-            int printErrorStep = printErrorSteps > 0 ? maxEpoch / printErrorSteps : maxEpoch >= 100 ? maxEpoch / 100 : maxEpoch > 10 ? maxEpoch / 10 : 1;
+            int errorHistoryStep = CalcErrorHistoryStep(maxEpoch, storeErrorSteps);
             double[,] outputs1 = new double[rowCountY, columnCountY];
             double[,] outputs2 = new double[rowCountY, columnCountY];
             int epoch = 0;
+            double error1;
+            double error2;
             do
             {
                 epoch++;
@@ -110,26 +132,49 @@ namespace NNExperiments.Perceptrons
                     for (var c = 0; c < columnCountY; c++)
                     {
                         outputs1[s, c] = currentOutput1[c];
-                        outputs2[s, c] = currentOutput1[c];
+                        outputs2[s, c] = currentOutput2[c];
                     }
                     perceptron1.Backward(targetOutputs, alpha);
                     perceptron2.Backward(targetOutputs, alpha);
                 }
                 error1 = CommonFunctions.MeanBatchMSE(outputs1, trainData.Outputs);
                 error2 = CommonFunctions.MeanBatchMSE(outputs2, trainData.Outputs);
-                if (printError && epoch % printErrorStep == 0)
+                if (isStoreErrorHistory && epoch % errorHistoryStep == 0)
                 {
-                    Console.WriteLine("P1({0}) Mean Batch MSE: {1}", epoch, error1);
-                    Console.WriteLine("P2({0}) Mean Batch MSE: {1}", epoch, error2);
+                    trainStats[0].ErrorHistory.Add(new EpochStats(epoch, error1));
+                    trainStats[1].ErrorHistory.Add(new EpochStats(epoch, error2));
                 }
             }
-            while (error1 > targetError && error2 > targetError && epoch < maxEpoch);
-            TrainStats[] trainStats = new TrainStats[2];
+            while (error1 > targetError
+                   && error2 > targetError
+                   && epoch < maxEpoch);
+
             trainStats[0].LastError = error1;
             trainStats[0].NumberOfEpoch = epoch;
             trainStats[1].LastError = error2;
             trainStats[1].NumberOfEpoch = epoch;
+
             return trainStats;
+        }
+
+        /// <summary>
+        /// Calculate the step of the error history. Each step will store the error value.
+        /// </summary>
+        /// <param name="maxEpoch"></param>
+        /// <param name="storeErrorSteps"></param>
+        /// <returns></returns>
+        private static int CalcErrorHistoryStep(int maxEpoch, int storeErrorSteps)
+        {
+            if (storeErrorSteps > 0)
+            {
+                return maxEpoch / storeErrorSteps;
+            }
+            return maxEpoch switch
+            {
+                >= 100 => maxEpoch / 100,
+                > 10 => maxEpoch / 10,
+                _ => 1,
+            };
         }
     }
 }

@@ -1,14 +1,27 @@
-﻿namespace NNExperiments.Common.Training
-{
-    public struct TrainStats
-    {
-        public double LastError;
+﻿using System;
+using System.Collections.Generic;
 
-        public int NumberOfEpoch;
+namespace NNExperiments.Common.Training
+{
+    /// <summary>
+    /// Train stats.
+    /// </summary>
+    public class TrainStats
+    {
+        public double LastError { get; set; } = double.MinValue;
+
+        public int NumberOfEpoch { get; set; } = -1;
+
+        public List<EpochStats> ErrorHistory { get; set; } = new();
+
+        /// <summary>
+        /// Train time.
+        /// </summary>
+        public TimeSpan Time { get; set; }
 
         public override string ToString()
         {
-            return string.Format("Last Error = {0}; Number of epoch = {1}", LastError, NumberOfEpoch);
+            return $"Last error: {LastError}; epoch: {NumberOfEpoch}; time: {Time}";
         }
     }
 }

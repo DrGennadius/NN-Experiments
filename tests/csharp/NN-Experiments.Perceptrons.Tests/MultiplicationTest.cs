@@ -16,7 +16,7 @@ namespace NNExperiments.Perceptrons.Tests
         private const double TargetError = 1e-7;
         private const int SmallBatchMaxEpoch = 250000;
         private const int BigBatchMaxIterations = 100;
-        private const bool PrintError = false;
+        private const bool IsStoreErrorHistory = true;
 
         [SetUp]
         public void Setup()
@@ -32,7 +32,12 @@ namespace NNExperiments.Perceptrons.Tests
             Perceptron perceptron = new(topology);
 
             var perceptronTrainer = new PerceptronTrainer();
-            var trainStats = perceptronTrainer.Train(perceptron, normalizedMultiplicationData, LearningRate, TargetError, SmallBatchMaxEpoch, PrintError);
+            var trainStats = perceptronTrainer.Train(perceptron,
+                                                     normalizedMultiplicationData,
+                                                     LearningRate,
+                                                     TargetError,
+                                                     SmallBatchMaxEpoch,
+                                                     IsStoreErrorHistory);
 
             double[] outputArray = perceptron.Forward(CommonFunctions.Scale(new double[] { 6, 6 }, 0, 9, 0, 1));
             double output = CommonFunctions.Scale(outputArray[0], 0, 1, 0, 9 * 9);
@@ -60,7 +65,7 @@ namespace NNExperiments.Perceptrons.Tests
                                                          LearningRate,
                                                          TargetError,
                                                          1,
-                                                         PrintError);
+                                                         IsStoreErrorHistory);
                 trainErrors[i] = trainStats.LastError;
             }
 
