@@ -38,6 +38,7 @@ namespace NNExperiments.Perceptrons.Tests
                                                      TargetError,
                                                      SmallBatchMaxEpoch,
                                                      IsStoreErrorHistory);
+            Console.WriteLine(trainStats);
 
             double[] outputArray = perceptron.Forward(CommonFunctions.Scale(new double[] { 6, 6 }, 0, 9, 0, 1));
             double output = CommonFunctions.Scale(outputArray[0], 0, 1, 0, 9 * 9);
@@ -66,6 +67,7 @@ namespace NNExperiments.Perceptrons.Tests
                                                          TargetError,
                                                          1,
                                                          IsStoreErrorHistory);
+                Console.WriteLine(trainStats);
                 trainErrors[i] = trainStats.LastError;
             }
 

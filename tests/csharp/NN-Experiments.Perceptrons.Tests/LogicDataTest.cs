@@ -6,6 +6,7 @@ using NNExperiments.Perceptrons.Common;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace NNExperiments.Perceptrons.Tests
@@ -31,6 +32,7 @@ namespace NNExperiments.Perceptrons.Tests
         [SetUp]
         public void Setup()
         {
+            Console.WriteLine($"[{DateTime.Now}] - start test...");
         }
 
         [Test]
@@ -112,9 +114,11 @@ namespace NNExperiments.Perceptrons.Tests
                 if (newPerceptron != null)
                 {
                     perceptrons.Add(newPerceptron);
+                    Console.WriteLine($"Created perceptron of type: {newPerceptron.GetType()}");
                 }
             }
 
+            Console.WriteLine();
             return perceptrons.ToArray();
         }
 
@@ -128,15 +132,19 @@ namespace NNExperiments.Perceptrons.Tests
 
         private void TestWithDifferentData(IBasicPerceptron perceptron)
         {
+            Console.WriteLine($"Testing the perceptron of type: {perceptron.GetType()}");
             foreach (var trainDataItem in _trainLogicDataDictionary)
             {
+                Console.WriteLine($"Train data: {trainDataItem.Key}");
                 int attempt = 1;
                 while (attempt < AttemptLimit)
                 {
+                    Console.WriteLine($"Attempt: {attempt}");
                     try
                     {
                         var perceptronClone = perceptron.Clone() as IBasicPerceptron;
                         TrainStats trainStats = Train(perceptronClone, trainDataItem.Value);
+                        Console.WriteLine($"Train time: {trainStats.Time}");
                         TestReadyLogicModel(perceptronClone, trainDataItem.Value, trainDataItem.Key);
                         break;
                     }
